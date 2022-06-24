@@ -1,27 +1,30 @@
 package com.devtides.retrofitproject.view
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.devtides.retrofitproject.R
+import com.devtides.retrofitproject.databinding.ActivityMainBinding
 import com.devtides.retrofitproject.viewmodel.MainViewModel
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
     private val itemsAdapter = ListAdapter(arrayListOf())
     private val viewModel: MainViewModel by viewModels()
+    private lateinit var binding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        viewModel.fetchData()
+//        viewModel.fetchData()
+//        viewModel.fetchDataSync()
+        viewModel.fetchDataRx()
 
-        items_list.apply {
+        binding.itemsList.apply {
             layoutManager = LinearLayoutManager(context)
             adapter = itemsAdapter
         }
@@ -32,22 +35,22 @@ class MainActivity : AppCompatActivity() {
     private fun observeViewModel() {
         viewModel.apiResponse.observe(this, Observer { items ->
             items?.let {
-                items_list.visibility = View.VISIBLE
+                binding.itemsList.visibility = View.VISIBLE
                 itemsAdapter.updateItems(it)
             }
         })
 
-        viewModel.error.observe(this, Observer { errorMsg ->
-            list_error.visibility = if (errorMsg == null) View.GONE else View.VISIBLE
-            list_error.text = "Error\n$errorMsg"
-        })
+        viewModel.error.observe(this) { errorMsg ->
+            binding.listError.visibility = if (errorMsg == null) View.GONE else View.VISIBLE
+            binding.listError.text = "Error\n$errorMsg"
+        }
 
         viewModel.loading.observe(this, Observer { isLoading ->
             isLoading?.let {
-                loading_view.visibility = if (it) View.VISIBLE else View.GONE
+                binding.loadingView.visibility = if (it) View.VISIBLE else View.GONE
                 if (it) {
-                    list_error.visibility = View.GONE
-                    items_list.visibility = View.GONE
+                    binding.listError.visibility = View.GONE
+                    binding.itemsList.visibility = View.GONE
                 }
             }
         })
